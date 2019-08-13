@@ -57,7 +57,7 @@ class Encoder(nn.Module):
         packed = pack_padded_sequence(embedded, seq_lens, batch_first=True)
         output, hidden = self.lstm(packed)
 
-        encoder_outputs, _ = pad_packed_sequence(output, batch_first=True)  # h dim = B x t_k x n
+        encoder_outputs, _ = pad_packed_sequence(output, batch_first=True)  # B x t_k x 2*hidden_dim; h dim = B x t_k x n
         encoder_outputs = encoder_outputs.contiguous()
 
         encoder_feature = encoder_outputs.view(-1, 2*config.hidden_dim)  # B * t_k x 2*hidden_dim
@@ -148,6 +148,13 @@ class Decoder(nn.Module):
 
     def forward(self, y_t_1, s_t_1, encoder_outputs, encoder_feature, enc_padding_mask,
                 c_t_1, extra_zeros, enc_batch_extend_vocab, coverage, step):
+
+        """
+        y_t_1: B x t_k
+        s_t_1: ?
+        encoder_outputs: B x t_k x 2*hidden_dim
+        """
+        
 
         if not self.training and step == 0:
             h_decoder, c_decoder = s_t_1

@@ -28,7 +28,7 @@ class Train(object):
 
         train_dir = os.path.join(config.log_root, 'train_%d' % (int(time.time())))
         if not os.path.exists(train_dir):
-            os.mkdir(train_dir)
+            os.makedirs(train_dir, exist_ok=True)
 
         self.model_dir = os.path.join(train_dir, 'model')
         if not os.path.exists(self.model_dir):
@@ -49,6 +49,7 @@ class Train(object):
         torch.save(state, model_save_path)
 
     def setup_train(self, model_file_path=None):
+        # initialize or load model
         self.model = Model(model_file_path)
 
         params = list(self.model.encoder.parameters()) + list(self.model.decoder.parameters()) + \

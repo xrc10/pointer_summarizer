@@ -1,13 +1,15 @@
 import os
 
-root_dir = os.path.expanduser("~")
+# root_dir = os.path.expanduser("~")
+root_dir = '../cnn-dailymail/data'
 
-#train_data_path = os.path.join(root_dir, "ptr_nw/cnn-dailymail-master/finished_files/train.bin")
-train_data_path = os.path.join(root_dir, "ptr_nw/cnn-dailymail-master/finished_files/chunked/train_*")
-eval_data_path = os.path.join(root_dir, "ptr_nw/cnn-dailymail-master/finished_files/val.bin")
-decode_data_path = os.path.join(root_dir, "ptr_nw/cnn-dailymail-master/finished_files/test.bin")
-vocab_path = os.path.join(root_dir, "ptr_nw/cnn-dailymail-master/finished_files/vocab")
-log_root = os.path.join(root_dir, "ptr_nw/log")
+#train_data_path = os.path.join(root_dir, "finished_files/train.bin")
+train_data_path = os.path.join(root_dir, "finished_files/chunked/train_*")
+eval_data_path = os.path.join(root_dir, "finished_files/val.bin")
+decode_data_path = os.path.join(root_dir, "finished_files/test.bin")
+vocab_path = os.path.join(root_dir, "finished_files/vocab")
+# log_root = os.path.join(root_dir, "log")
+log_root = 'log/'
 
 # Hyperparameters
 hidden_dim= 256
