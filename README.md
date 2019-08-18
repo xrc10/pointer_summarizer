@@ -57,5 +57,11 @@ Note:
 * It is tested on pytorch 0.4 with python 2.7
 * You need to setup [pyrouge](https://github.com/andersjo/pyrouge) to get the rouge score
 
+```
+pip tensorflow-gpu==1.9.0
+conda install pytorch=0.4.0 cuda90 -c pytorch
+# set up pyrouge
+https://poojithansl7.wordpress.com/2018/08/04/setting-up-rouge/
+```
 
 
