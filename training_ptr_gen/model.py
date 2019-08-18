@@ -55,9 +55,9 @@ class Encoder(nn.Module):
         embedded = self.embedding(input)
 
         packed = pack_padded_sequence(embedded, seq_lens, batch_first=True)
-        output, hidden = self.lstm(packed)
+        output, hidden = self.lstm(packed) # hidden: (h_0, c_0) 2 x B x hidden_dim
 
-        encoder_outputs, _ = pad_packed_sequence(output, batch_first=True)  # B x t_k x 2*hidden_dim; h dim = B x t_k x n
+        encoder_outputs, _ = pad_packed_sequence(output, batch_first=True)  #  B x t_k x 2*hidden_dim ; h dim = B x t_k x n
         encoder_outputs = encoder_outputs.contiguous()
 
         encoder_feature = encoder_outputs.view(-1, 2*config.hidden_dim)  # B * t_k x 2*hidden_dim
@@ -75,13 +75,13 @@ class ReduceState(nn.Module):
         init_linear_wt(self.reduce_c)
 
     def forward(self, hidden):
-        h, c = hidden # h, c dim = 2 x b x hidden_dim
-        h_in = h.transpose(0, 1).contiguous().view(-1, config.hidden_dim * 2)
+        h, c = hidden # h, c dim = 2 x B x hidden_dim
+        h_in = h.transpose(0, 1).contiguous().view(-1, config.hidden_dim * 2) # B x 2*hidden_dim
         hidden_reduced_h = F.relu(self.reduce_h(h_in))
-        c_in = c.transpose(0, 1).contiguous().view(-1, config.hidden_dim * 2)
+        c_in = c.transpose(0, 1).contiguous().view(-1, config.hidden_dim * 2) # B x 2*hidden_dim
         hidden_reduced_c = F.relu(self.reduce_c(c_in))
 
-        return (hidden_reduced_h.unsqueeze(0), hidden_reduced_c.unsqueeze(0)) # h, c dim = 1 x b x hidden_dim
+        return (hidden_reduced_h.unsqueeze(0), hidden_reduced_c.unsqueeze(0)) # h, c dim = 1 x B x hidden_dim
 
 class Attention(nn.Module):
     def __init__(self):
@@ -93,6 +93,12 @@ class Attention(nn.Module):
         self.v = nn.Linear(config.hidden_dim * 2, 1, bias=False)
 
     def forward(self, s_t_hat, encoder_outputs, encoder_feature, enc_padding_mask, coverage):
+        # s_t_hat: B x 2*hidden_dim decoder states
+        # encoder_outputs: B x t_k x 2*hidden_dim
+        # encoder_feature: B * t_k x 2*hidden_dim
+        # enc_padding_mask: B x t_k
+        # coverage: B x t_k
+        
         b, t_k, n = list(encoder_outputs.size())
 
         dec_fea = self.decode_proj(s_t_hat) # B x 2*hidden_dim
@@ -148,14 +154,19 @@ class Decoder(nn.Module):
 
     def forward(self, y_t_1, s_t_1, encoder_outputs, encoder_feature, enc_padding_mask,
                 c_t_1, extra_zeros, enc_batch_extend_vocab, coverage, step):
-
         """
-        y_t_1: B x t_k
-        s_t_1: ?
+        y_t_1: B x 1
+        s_t_1: (h_t-1, c_t-1) 1 x B x hidden_dim
         encoder_outputs: B x t_k x 2*hidden_dim
+        encoder_feature: B * t_k x 2*hidden_dim
+        enc_padding_mask: B * t_k
+        c_t_1: B x 2*hidden_dim
+        extra_zeros: B x batch_max_art_oovs
+        enc_batch_extend_vocab: B x t_k
+        coverage: B x t_k
+        step: Int
         """
         
-
         if not self.training and step == 0:
             h_decoder, c_decoder = s_t_1
             s_t_hat = torch.cat((h_decoder.view(-1, config.hidden_dim),
@@ -189,7 +200,7 @@ class Decoder(nn.Module):
         #output = F.relu(output)
 
         output = self.out2(output) # B x vocab_size
-        vocab_dist = F.softmax(output, dim=1)
+        vocab_dist = F.softmax(output, dim=1) # B x vocab_size
 
         if config.pointer_gen:
             vocab_dist_ = p_gen * vocab_dist

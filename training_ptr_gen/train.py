@@ -3,6 +3,7 @@ from __future__ import unicode_literals, print_function, division
 import os
 import time
 import argparse
+import json
 
 import tensorflow as tf
 import torch
@@ -58,6 +59,9 @@ class Train(object):
         self.optimizer = Adagrad(params, lr=initial_lr, initial_accumulator_value=config.adagrad_init_acc)
 
         start_iter, start_loss = 0, 0
+
+        with open(os.path.join(self.model_dir, 'config.py'), 'w') as fp:
+            fp.write(open(config.__file__).read())
 
         if model_file_path is not None:
             state = torch.load(model_file_path, map_location= lambda storage, location: storage)

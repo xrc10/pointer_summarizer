@@ -10,7 +10,7 @@ def get_input_from_batch(batch, use_cuda):
   enc_padding_mask = Variable(torch.from_numpy(batch.enc_padding_mask)).float()
   enc_lens = batch.enc_lens
   extra_zeros = None
-  enc_batch_extend_vocab = None
+  enc_batch_extend_vocab = None 
 
   if config.pointer_gen:
     enc_batch_extend_vocab = Variable(torch.from_numpy(batch.enc_batch_extend_vocab).long())
